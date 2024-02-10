@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Subject Test</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+  }
+
+  h1 {
+    text-align: center;
+    color: #333;
+  }
+
+  #questions {
+    margin: 20px auto;
+    max-width: 800px;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  #loading {
+    text-align: center;
+    margin-top: 50px;
+  }
+</style>
+</head>
+<body>
+
+<h1>Subject Test</h1>
+
+<div id="loading">Loading...</div>
+
+<div id="questions" style="display: none;"></div>
+
+<script>
+// Function to fetch questions from OpenAI API
+function fetchQuestions(age, subject) {
+  // Define your OpenAI API key
+  const apiKey = "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";
+  
+  // Construct the API endpoint
+  const apiUrl = "https://api.openai.com/v1/engines/davinci-codex/completions";
+  
+  // Construct the prompt for the API
+  const prompt = `Given the age ${age} and subject ${subject}, generate 100 questions in code format.\n\n###\n`;
+  
+  // Define the data to be sent in the request
+  const requestData = {
+    "prompt": prompt,
+    "max_tokens": 1000,
+    "temperature": 0.7
+  };
+
+  // Display loading message
+  document.getElementById("loading").innerText = "Loading...";
+  
+  // Make a POST request to the OpenAI API
+  fetch(apiUrl, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${apiKey}`
+    },
+    body: JSON.stringify(requestData)
+  })
+  .then(response => {
+    if (!response.ok) {
+      throw new Error("Network response was not ok.");
+    }
+    return response.json();
+  })
+  .then(data => {
+    // Display the generated questions on the page
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("questions").style.display = "block";
+    document.getElementById("questions").innerHTML = "<pre>" + data.choices[0].text.trim() + "</pre>";
+  })
+  .catch(error => {
+    console.error("Error:", error);
+    document.getElementById("loading").innerText = "Error loading questions.";
+  });
+}
+
+// Extract age and subject from the URL query parameters
+const urlParams = new URLSearchParams(window.location.search);
+const age = urlParams.get('age');
+const subject = urlParams.get('subject');
+
+// Call the fetchQuestions function with the extracted age and subject
+fetchQuestions(age, subject);
+</script>
+
+</body>
+</html>
